@@ -1,7 +1,7 @@
 # Гайд
 
 ### Клонирование репозитория
-`$ git clone git@github.com:artemka-web3/elastic_search.git`
+`$ [git clone git@github.com:artemka-web3/elastic_search.git](https://github.com/artemka-web3/elastic_search.git)`
 `$ cd elastic_search`
 
 ### Запуск на локальном комьютере
