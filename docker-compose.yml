@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  es01:
+    image: elasticsearch:8.7.1
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - elastic
+  web:
+
+    build: ./backend
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      es01:
+        condition: service_healthy 
+      db:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+      - ELASTICSEARCH_URL=http://es01:9200  
+    volumes:
+      - ./backend:/main
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - elastic  # Подключение к той же сети
+
+  db:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - elastic 
+
+volumes:
+  pgdata:
+
+networks:
+  elastic:
+    external: true  
